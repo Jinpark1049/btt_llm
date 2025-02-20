@@ -11,4 +11,10 @@ curl -fsSL https://ollama.com/install.sh | sh
 
 ollama pull gemma2:27b
 ```
+### Streamlit
+For linux
+```bash
+cd app
+streamlit run app.py
+```
 
