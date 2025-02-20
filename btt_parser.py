@@ -232,7 +232,7 @@ if __name__ == "__main__":
     model = 'gemma2:27b'
     btt_parser = Biollm(model= model)
     
-    path = "/home/bioai/workspace/btt/bttReports/2021/RJ21225-V.pdf"
+    path = "/workspace/btt/bttReports/2021/RJ21225-V.pdf"
     btt_parser.run(path)
     print(btt_parser.parsed_data)
     result = btt_parser.run_one(path, search = 'animal_date', llm_search = False)
