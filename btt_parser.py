@@ -8,7 +8,7 @@ import time
 import json
 
 class Biollm:
-    def __init__(self, data:str ='/home/bioai/workspace/btt/util/data.json', model:str ="mistral:latest"):
+    def __init__(self, data:str ='/workspace/btt/util/data.json', model:str ="mistral:latest"):
         
         with open(data, 'r') as json_file:
             self.data = json.load(json_file)
