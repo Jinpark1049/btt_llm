@@ -1,2 +1,4 @@
 # btt_llm
-btt_llm (demo streamlit), report parsing application
+
+report parser with ollama/ langchain/ streamlit (for demo)
+
