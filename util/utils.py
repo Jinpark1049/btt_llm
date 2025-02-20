@@ -42,7 +42,7 @@ def year_pdf_files(main_dir, year):
 
 if __name__ == "__main__":
     
-    main_dir = "/home/bioai/workspace/btt/bttReports/"
+    main_dir = "/workspace/btt/bttReports/"
     
     if os.path.exists(main_dir):
         year_pdf_files(main_dir, 2022)
