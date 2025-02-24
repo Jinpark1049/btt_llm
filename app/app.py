@@ -5,19 +5,38 @@ import re
 from io import BytesIO
 from streamlit_pdf_viewer import pdf_viewer
 import sys
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain.schema import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+
+st.set_page_config(
+    page_title="BTT Report Extractor",
+    page_icon="📁",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+if "run_chat_assistant" not in st.session_state:
+    st.session_state.run_chat_assistant = False
+
+if "run_llm_parser" not in st.session_state:
+    st.session_state.run_llm_parser = False
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from btt_parser import *
 
-def main():
- 
-    st.set_page_config(
-        page_title="BTT Report Extractor",
-        page_icon="📁",
-        layout="wide",
-        initial_sidebar_state="expanded"
+@st.cache_resource
+def load_embeddings():
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-mpnet-base-v2",
+        model_kwargs={'device': 'cpu'},
+        encode_kwargs={'normalize_embeddings': True},
     )
 
+def main(embeddings_model):
+    
+    st.session_state["embeddings_model"] = embeddings_model
     col1, col2 = st.columns((1, 1), gap='medium')
 
     with st.sidebar:
@@ -43,6 +62,13 @@ def main():
             # Ensure filename is safe
             safe_file_name = re.sub(r'[<>:"/\\|?*]', '_', uploaded_file.name)
             save_path = os.path.join(save_dir, safe_file_name)
+            # 만약 이전에 업로드된 파일과 이름이 다르다면 retriever를 새로 생성하도록 flag 설정/ 버튼 flag 설정
+            new_file_uploaded = st.session_state.get("pdf_file_name") != safe_file_name
+            if new_file_uploaded:
+                # flag 설정/ message initializer
+                st.session_state["messages"] = []  # 기존 대화 내역 삭제
+                st.session_state['run_chat_assistant'] = False
+                st.session_state['run_llm_parser'] = False
 
             # Save the file
             with open(save_path, "wb") as f:
@@ -56,7 +82,22 @@ def main():
             st.session_state["pdf_path"] = save_path
             st.session_state["pdf_text"] = pdf_text
             st.session_state['binary_data'] = uploaded_file.getvalue()
-
+            st.session_state['new_file_uploaded'] = new_file_uploaded
+                        
+            if new_file_uploaded or "documents" not in st.session_state:
+                # PDF에서 불필요한 공백 및 점 제거 등 전처리 (필요에 따라 수정)
+                doc_text_formatted = st.session_state["pdf_text"].replace('.', '')
+                doc_text_formatted = "".join("".join(doc_text_formatted.split("\n")).split("        "))
+                # 문서 splitter: 긴 텍스트를 청크로 분할
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=500,
+                    chunk_overlap=100,
+                    length_function=len,
+                )
+                texts = text_splitter.split_text(doc_text_formatted)
+                documents = [Document(page_content=text) for text in texts]
+                st.session_state['documents'] = documents
+                
     # Display extracted text in column 1
     with col1:
         if st.session_state.get("pdf_text"):
@@ -69,4 +110,7 @@ def main():
             pdf_viewer(input=st.session_state['binary_data'], height=800)
 
 if __name__ == "__main__":
-    main()
+    
+    embeddings_model = load_embeddings()
+    main(embeddings_model)
+    
