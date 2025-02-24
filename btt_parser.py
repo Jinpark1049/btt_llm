@@ -6,9 +6,11 @@ import re
 from util.utils import *
 import time
 import json
+from langchain_core.output_parsers import StrOutputParser
+
 
 class Biollm:
-    def __init__(self, data:str ='/workspace/btt/util/data.json', model:str ="mistral:latest"):
+    def __init__(self, data:str ='/home/workspace/btt/util/data.json', model:str ="mistral:latest"):
         
         with open(data, 'r') as json_file:
             self.data = json.load(json_file)
@@ -227,12 +229,30 @@ class Biollm:
         self.parsed_data = {column: "none" for column in self.data['column_order']}
         self.relevant_pages = {column: [] for column in self.searching_column}  
 
+    def rag(self, retriever, query):
+        
+        docs = retriever.invoke(query)
+        prompt = PromptTemplate(
+            input_variables=["docs", "question"],
+            template="""
+            Answer the question based only on the following context: {docs}
+    
+            Question: {question}.  
+            """
+            )
+        
+        chain = prompt | self.llm | StrOutputParser()
+
+        response = chain.invoke({'docs': ((docs)), 'question':query})
+    
+        return response
+    
 if __name__ == "__main__":
    # model = 'mistral:latest'
     model = 'gemma2:27b'
     btt_parser = Biollm(model= model)
     
-    path = "/workspace/btt/bttReports/2021/RJ21225-V.pdf"
+    path = "/home/workspace/btt/bttReports/2021/RJ21225-V.pdf"
     btt_parser.run(path)
     print(btt_parser.parsed_data)
     result = btt_parser.run_one(path, search = 'animal_date', llm_search = False)
