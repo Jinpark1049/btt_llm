@@ -1,10 +1,11 @@
 # BTT_llm
 
-report parser with ollama/ langchain/ streamlit (for demo)
+report parser with ollama/ langchain (RAG)/ streamlit, chatbot (for demo)
 
 ## Getting Started
 
 ### Ollama
+
 For linux
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
@@ -23,5 +24,4 @@ streamlit run app.py
 
 ### Result Page
 
-<img width="1711" alt="스크린샷 2025-02-20 오후 6 43 48" src="https://github.com/user-attachments/assets/7e50f801-6327-4084-9f26-355debb2bd5b" />
-
+<img width="1669" alt="스크린샷 2025-02-24 오후 3 22 18" src="https://github.com/user-attachments/assets/6bbf7a4c-b78e-4384-b528-9c074c0c83d8" />
